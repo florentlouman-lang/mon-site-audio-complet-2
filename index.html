@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lecteur Audio Avancé</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/tone@latest/build/Tone.js"></script>
+</head>
+<body>
+  <div class="player">
+    <h1>🎧 Lecteur Audio</h1>
+    <label for="trackSelect">Choisir un morceau :</label>
+    <select id="trackSelect">
+      <option value="audio/morceau1.mp3">Morceau 1</option>
+      <option value="audio/morceau2.mp3">Morceau 2</option>
+      <option value="audio/morceau3.mp3">Morceau 3</option>
+    </select>
+    <button id="playPause">▶️ Lecture</button>
+    <div class="control-group">
+      <div class="label-row">
+        <span>Vitesse</span>
+        <span id="speedValue">1.00×</span>
+      </div>
+      <input type="range" id="speed" min="0.5" max="2" step="0.05" value="1" />
+    </div>
+    <div class="control-group">
+      <div class="label-row">
+        <span>Hauteur</span>
+        <span id="pitchValue">0 demi-ton</span>
+      </div>
+      <input type="range" id="pitch" min="-12" max="12" step="1" value="0" />
+    </div>
+    <footer>Pitch & Tempo 100% indépendants – Tone.js</footer>
+  </div>
+
+<script>
+let player, pitchShift;
+let isPlaying = false;
+
+function loadTrack(url) {
+  if (player) {
+    player.dispose();
+    pitchShift.dispose();
+  }
+  pitchShift = new Tone.PitchShift({ pitch: 0 }).toDestination();
+  player = new Tone.Player(url).connect(pitchShift);
+  player.playbackRate = 1;
+}
+
+loadTrack(document.getElementById("trackSelect").value);
+
+document.getElementById("trackSelect").addEventListener("change", e => {
+  loadTrack(e.target.value);
+});
+
+document.getElementById("playPause").addEventListener("click", async () => {
+  await Tone.start();
+  if (!isPlaying) {
+    player.start();
+    isPlaying = true;
+    document.getElementById("playPause").textContent = "⏸ Pause";
+  } else {
+    player.stop();
+    isPlaying = false;
+    document.getElementById("playPause").textContent = "▶️ Lecture";
+  }
+});
+
+document.getElementById("speed").addEventListener("input", e => {
+  const v = parseFloat(e.target.value);
+  player.playbackRate = v;
+  document.getElementById("speedValue").textContent = v.toFixed(2) + "×";
+});
+
+document.getElementById("pitch").addEventListener("input", e => {
+  const s = parseInt(e.target.value);
+  pitchShift.pitch = s;
+  document.getElementById("pitchValue").textContent =
+    (s >= 0 ? "+" : "") + s + " demi-tons";
+});
+</script>
+</body>
+</html>
